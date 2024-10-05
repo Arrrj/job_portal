@@ -13,6 +13,14 @@ class CompanyViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated, IsEmployer]
 
     def create(self, request):
+        """
+        - Creates a new Company for the employer.
+        - `request`: The HTTP request containing job details (company_name, description, company_location).
+        - **Returns**:
+            - 201 Created if the company is successfully created.
+            - 409 Conflict if the user already own a company or the company name already exists.
+            - 400 Bad Request if data is invalid.
+        """
         if Company.objects.filter(owner=request.user).exists():
             return Response({'message': 'User already owns a company.'}, status=status.HTTP_409_CONFLICT)
 

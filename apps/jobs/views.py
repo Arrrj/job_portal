@@ -10,7 +10,7 @@ from rest_framework.response import Response
 from apps.company.models import Company
 from apps.jobs.models import JobListing, JobApplication
 from apps.jobs.serializers import JobSerializer, JobApplicationSerializer
-from apps.permissions import IsEmployer, IsCandidate
+from apps.permissions import IsEmployer, IsCandidate, IsStaff
 
 
 class JobViewSet(viewsets.ModelViewSet):
@@ -25,7 +25,7 @@ class JobViewSet(viewsets.ModelViewSet):
     ]
     filterset_fields = ["salary", "job_location", "is_active"]
 
-    permission_classes = [IsAuthenticated, IsEmployer | IsCandidate]
+    permission_classes = [IsAuthenticated, IsEmployer | IsCandidate | IsStaff]
 
     def create(self, request):
         """
@@ -64,6 +64,10 @@ class JobViewSet(viewsets.ModelViewSet):
         """
 
         jobs = JobListing.objects.all()
+
+        if self.request.user.is_staff:
+            return jobs
+
         if self.request.user.roles == "employer":
 
             owner_company = get_object_or_404(Company, owner=self.request.user)
@@ -245,7 +249,7 @@ class EmployerJobApplicationViewSet(viewsets.ModelViewSet):
         job_application.save()
         subject = "Status Changed"
         message = (
-            f"Dear {request.user.username},\n\n Your job status changed for the {job_application.job.job_title}, "
+            f"Dear {request.user.username}, \n\n Your job status changed for the {job_application.job.job_title}, "
             f"at{job_application.job.company.company_name} "
         )
         from_email = request.user.email

@@ -19,3 +19,13 @@ class IsCandidate(BasePermission):
             return True
         self.message = "You must be an candidate to access this resource."
         return False
+
+
+class IsStaff(BasePermission):
+    message = None
+
+    def has_permission(self, request, view):
+        if request.user.is_authenticated and request.user.is_staff:
+            return True
+        self.message = "You must be an admin to access this resource."
+        return False

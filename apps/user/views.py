@@ -16,6 +16,13 @@ class UserViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=["post"], url_path="register")
     def register(self, request):
+        """
+        Create a new user.
+        `request`: The HTTP request containing user details (username, role(candidate, employer), email, password).
+        **Return**:
+        - 201 Created: Returns a success message if the user is successfully registered.
+        - 400 Bad Request: Returns validation errors if any field is invalid.
+        """
         serializer = UserCreateSerializer(data=request.data)
         if serializer.is_valid():
             password = make_password(serializer.validated_data["password"])
@@ -28,6 +35,14 @@ class UserViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=["post"], url_path="login")
     def login(self, request):
+        """
+        Authenticates a user with valid login credentials (username and password).
+        `request`: The HTTP request containing user details (username, password).
+        **Return**:
+        - 200 OK: Returns JWT access and refresh tokens upon successful login.
+        - 401 Unauthorized: If the login credentials are invalid.
+        - 400 Bad Request: If the input data does not pass validation.
+        """
         serializer = UserLoginSerializer(data=request.data)
         if serializer.is_valid():
             username = serializer.validated_data["username"]
@@ -57,6 +72,12 @@ class UserViewSet(viewsets.ModelViewSet):
         permission_classes=[IsAuthenticated],
     )
     def get_user_role(self, request):
+        """
+         Retrieves the role and username of the currently authenticated user.
+        **Responses**:
+        - 200 OK: Returns the user's role and username.
+        - 401 Unauthorized: If the user is not authenticated.
+        """
         user = request.user
         return Response(
             {"role": user.roles, "name": user.username}, status=status.HTTP_200_OK
